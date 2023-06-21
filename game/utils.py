@@ -48,6 +48,7 @@ def print_text(surface, text, font, color=Color("tomato")):
 
     surface.blit(text_surface, rect)
     
+    
 def print_life(surface, text, font, color=Color("white")):
     text_surface = font.render(text, False, color)
 

@@ -29,10 +29,12 @@ class Spaceship(GameObject):
     MANEUVERABILITY = 3
     ACCELERATION = 0.15
     BULLET_SPEED = 4
+    MISSILE_SPEED = 1
     LIFE = 3
 
-    def __init__(self, position, create_bullet_callback):
+    def __init__(self, position, create_bullet_callback, create_missile_callback):
         self.create_bullet_callback = create_bullet_callback
+        self.create_missile_callback = create_missile_callback
         self.laser_sound = load_sound("laser")
         # Make a copy of the original UP vector
         self.direction = Vector2(UP)
@@ -61,7 +63,12 @@ class Spaceship(GameObject):
         bullet_velocity = self.direction * self.BULLET_SPEED + self.velocity
         bullet = Bullet(self.position, bullet_velocity)
         self.create_bullet_callback(bullet)
-        self.laser_sound.play()
+        #self.laser_sound.play()
+        
+    def missileShoot(self):
+        missile_velocity = self.direction * self.MISSILE_SPEED + self.velocity
+        missile = Bullet2(self.position, missile_velocity)
+        self.create_missile_callback(missile)
 
 
 class BuffBullet(GameObject):
@@ -69,11 +76,36 @@ class BuffBullet(GameObject):
         self.create_buff_callback = create_buff_callback
         # Make a copy of the original UP vector
         self.direction = Vector2(UP)
-        super().__init__(position, load_sprite("buff1.png"), Vector2(0))
+        super().__init__(position, load_sprite("minigun.png"), Vector2(0))
 
     def getBuff(self):
         return 1
     
+class Bomb(GameObject):
+    def __init__(self, position, create_item_callback):
+        self.create_item_callback = create_item_callback
+        self.direction = Vector2(UP)
+        super().__init__(position, load_sprite("bomb1.png"), Vector2(0))
+
+class Explosion(GameObject):
+    def __init__(self, position, create_explosion_callback):
+        self.create_explosion_callback = create_explosion_callback
+        self.direction = Vector2(UP)
+        super().__init__(position, load_sprite("explosion.png"), Vector2(0))
+
+class Missile(GameObject):
+    def __init__(self, position, create_item_callback):
+        self.create_item_callback = create_item_callback
+        self.direction = Vector2(UP)
+        super().__init__(position, load_sprite("missile.png"), Vector2(0))
+
+class Bullet2(GameObject):
+    def __init__(self, position, velocity):
+        super().__init__(position, load_sprite("bullet2.png"), velocity)
+
+    def move(self, surface):
+        self.position = self.position + self.velocity
+
 
 class EnemySpaceship(GameObject):
     MANEUVERABILITY = 3
@@ -121,7 +153,7 @@ class EnemySpaceship(GameObject):
         bullet_velocity = self.direction * self.BULLET_SPEED + self.velocity
         bullet = Bullet(self.position, bullet_velocity)
         self.create_bullet_callback(bullet)
-        self.laser_sound.play()
+        #self.laser_sound.play()
 
 
 class Asteroid(GameObject):
