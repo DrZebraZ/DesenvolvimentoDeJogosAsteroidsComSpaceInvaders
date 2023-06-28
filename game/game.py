@@ -295,40 +295,39 @@ class SpaceRocks:
         self.timer += 1
         
     def level1(self):
-        self.levelBOSS1()
-        # self.rount=1
-        # for _ in range(4):
-        #     while True:
-        #         position = get_random_position(self.screen)
-        #         if (
-        #             position.distance_to(self.spaceship.position)
-        #             > self.MIN_ASTEROID_DISTANCE
-        #         ):
-        #             break
+        self.rount=1
+        for _ in range(4):
+            while True:
+                position = get_random_position(self.screen)
+                if (
+                    position.distance_to(self.spaceship.position)
+                    > self.MIN_ASTEROID_DISTANCE
+                ):
+                    break
             
-        #     self.asteroids.append(Asteroid(position, self.asteroids.append, 1))
+            self.asteroids.append(Asteroid(position, self.asteroids.append, 1))
         
-        # if len(self.missilesInv)<2:
-        #     for _ in range(2-len(self.missilesInv)):
-        #         while True:
-        #             position = get_random_position(self.screen)
-        #             if (
-        #                 position.distance_to(self.spaceship.position)
-        #                 > self.MIN_ASTEROID_DISTANCE
-        #             ):
-        #                 break
-        #         self.missiles.append(Missile(position, self.missiles.append))
+        if len(self.missilesInv)<2:
+            for _ in range(2-len(self.missilesInv)):
+                while True:
+                    position = get_random_position(self.screen)
+                    if (
+                        position.distance_to(self.spaceship.position)
+                        > self.MIN_ASTEROID_DISTANCE
+                    ):
+                        break
+                self.missiles.append(Missile(position, self.missiles.append))
         
-        # if len(self.iventory)<2:
-        #     for _ in range(2-len(self.iventory)):
-        #         while True:
-        #             position = get_random_position(self.screen)
-        #             if (
-        #                 position.distance_to(self.spaceship.position)
-        #                 > self.MIN_ASTEROID_DISTANCE
-        #             ):
-        #                 break
-        #         self.items.append(Bomb(position, self.items.append))
+        if len(self.iventory)<2:
+            for _ in range(2-len(self.iventory)):
+                while True:
+                    position = get_random_position(self.screen)
+                    if (
+                        position.distance_to(self.spaceship.position)
+                        > self.MIN_ASTEROID_DISTANCE
+                    ):
+                        break
+                self.items.append(Bomb(position, self.items.append))
             
     def level2(self):
         self.round = 2
