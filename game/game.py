@@ -1,7 +1,9 @@
 import pygame
 import random
 
-from models import Asteroid, Spaceship, EnemySpaceship, BuffBullet, Bomb, Missile, Explosion
+from pygame.math import Vector2
+
+from models import Asteroid, Spaceship, EnemySpaceship, BuffBullet, Bomb, Missile, Explosion, CentipedeHead, CentipedeBody
 from utils import get_random_position, load_sprite, print_text, print_life
 
 
@@ -13,6 +15,9 @@ class SpaceRocks:
     missilesInv = []
     iventory = []
     timer = 0
+    centipedeTimer = 0
+    centipedeNextDirection = 0
+    centipedeAsset = 1
     def __init__(self):
         self.start()
     
@@ -26,6 +31,7 @@ class SpaceRocks:
         self.font = pygame.font.Font(None, 64)
         self.message = ""
         self.asteroids = []
+        self.centipede = []
         self.bullets = []
         self.enemyBullets = []
         self.enemys = []
@@ -88,13 +94,49 @@ class SpaceRocks:
                 self.spaceship.desaccelerate()
 
     def _process_game_logic(self):
+        if self.centipede:
+            if self.timer%5==0:
+                for centip in self.centipede:
+                    if centip:
+                        centip.changeSprite(self.centipedeAsset)
+                if self.centipedeAsset==3:
+                    self.centipedeAsset= 1
+                else:
+                    self.centipedeAsset+=1
+            if self.centipedeTimer==0:
+                self.centipedeNextDirection = random.randint(0,1)
+                
+            for i in range(0, len(self.centipede)):
+                if i*10==self.centipedeTimer:
+                    if self.centipede[i]:
+                        self.centipede[i].changeClockwise(self.centipedeNextDirection)
+                    else:
+                        self.centipedeNextDirection = random.randint(0,1)
+                else:
+                    if self.centipede[i]:
+                        self.centipede[i].changeClockwise(-1)
+            
+            self.centipedeTimer+=1
+            if self.centipedeTimer>=(len(self.centipede)*10)+1:
+                self.centipedeTimer=0
+            
         if self.timer == 120:
             self.timer = 0
             for explode in self.explosion:
                 self.explosion.remove(explode)
-        
+                    
         for game_object in self._get_game_objects():
-            game_object.move(self.screen)
+            if game_object:
+                game_object.move(self.screen)
+        
+        
+        for centi in self.centipede:
+            if centi and self.spaceship:
+                if centi.collides_with(self.spaceship):
+                    self._remove_life()
+                    if not self.spaceship:
+                        self.message = "You Lost press Z to restart!"
+                        break
             
         if self.spaceship:
             for asteroid in self.asteroids:
@@ -159,7 +201,26 @@ class SpaceRocks:
                         self.enemys.remove(enemy)
                         self.bullets.remove(bullet)
                         break
-        
+            if self.centipede:
+                for i in range(len(self.centipede)):
+                    if bullet in self.bullets[:] and self.centipede[i] and self.spaceship:
+                        if bullet.collides_with(self.centipede[i]):
+                            if bullet in self.bullets:
+                                self.bullets.remove(bullet)
+                            if self.centipede[i].getType() == 'HEAD':
+                                aux = i
+                                while(self.centipede[aux]):
+                                    aux+=1
+                                self.centipede.pop(aux-1)
+                                self.spaceship.LIFE+=10
+                            else:
+                                if len(self.centipede) < 60:
+                                    position = self.centipede[i].position
+                                    self.centipede.append(CentipedeHead(position))
+                                    self.centipede.append(CentipedeBody(Vector2(position.x, position.y+30)))
+                                    self.centipede.append(CentipedeBody(Vector2(position.x, position.y+60)))
+                                    self.centipede.append(None)
+            
         for bullet in self.bullet2[:]:
             for asteroid in self.asteroids[:]:
                 if asteroid.collides_with(bullet):
@@ -205,7 +266,8 @@ class SpaceRocks:
             if not self.screen.get_rect().collidepoint(bullet.position):
                 self.enemyBullets.remove(bullet)                        
             
-        if not self.asteroids and not self.enemys and self.spaceship:
+        print(self.centipede)
+        if not self.asteroids and not self.enemys and self.spaceship and len(self.centipede)<2:
             if self.round == 1:
                 self.level2()
             elif self.round == 2:
@@ -224,42 +286,49 @@ class SpaceRocks:
                 self.level9()
             elif self.round == 9:
                 self.level10()
+            elif self.round == 10:
+                self.levelBOSS1()
+            elif self.round == 11:
+                self.levelBOSS2()
+            elif self.round == 12:
+                self.message = 'YOU WIN!'
         self.timer += 1
         
     def level1(self):
-        self.rount=1
-        for _ in range(4):
-            while True:
-                position = get_random_position(self.screen)
-                if (
-                    position.distance_to(self.spaceship.position)
-                    > self.MIN_ASTEROID_DISTANCE
-                ):
-                    break
+        self.levelBOSS1()
+        # self.rount=1
+        # for _ in range(4):
+        #     while True:
+        #         position = get_random_position(self.screen)
+        #         if (
+        #             position.distance_to(self.spaceship.position)
+        #             > self.MIN_ASTEROID_DISTANCE
+        #         ):
+        #             break
             
-            self.asteroids.append(Asteroid(position, self.asteroids.append, 1))
+        #     self.asteroids.append(Asteroid(position, self.asteroids.append, 1))
         
-        if len(self.missilesInv)<2:
-            for _ in range(2-len(self.missilesInv)):
-                while True:
-                    position = get_random_position(self.screen)
-                    if (
-                        position.distance_to(self.spaceship.position)
-                        > self.MIN_ASTEROID_DISTANCE
-                    ):
-                        break
-                self.missiles.append(Missile(position, self.missiles.append))
+        # if len(self.missilesInv)<2:
+        #     for _ in range(2-len(self.missilesInv)):
+        #         while True:
+        #             position = get_random_position(self.screen)
+        #             if (
+        #                 position.distance_to(self.spaceship.position)
+        #                 > self.MIN_ASTEROID_DISTANCE
+        #             ):
+        #                 break
+        #         self.missiles.append(Missile(position, self.missiles.append))
         
-        if len(self.iventory)<2:
-            for _ in range(2-len(self.iventory)):
-                while True:
-                    position = get_random_position(self.screen)
-                    if (
-                        position.distance_to(self.spaceship.position)
-                        > self.MIN_ASTEROID_DISTANCE
-                    ):
-                        break
-                self.items.append(Bomb(position, self.items.append))
+        # if len(self.iventory)<2:
+        #     for _ in range(2-len(self.iventory)):
+        #         while True:
+        #             position = get_random_position(self.screen)
+        #             if (
+        #                 position.distance_to(self.spaceship.position)
+        #                 > self.MIN_ASTEROID_DISTANCE
+        #             ):
+        #                 break
+        #         self.items.append(Bomb(position, self.items.append))
             
     def level2(self):
         self.round = 2
@@ -434,13 +503,44 @@ class SpaceRocks:
                     break
             self.asteroids.append(Asteroid(position, self.asteroids.append, size))
         self.enemys.append(EnemySpaceship(position, self.enemyBullets.append))
-        self.enemys.append(EnemySpaceship(position, self.enemyBullets.append))
+        self.enemys.append(EnemySpaceship(position, self.enemyBullets.append)) 
+    
+    def levelBOSS1(self):
+        self.round=11
+        self.spaceship.LIFE = 100
+        while True:
+            position = get_random_position(self.screen)
+            if (
+                position.distance_to(self.spaceship.position)
+                > self.MIN_ASTEROID_DISTANCE
+            ):
+                break
+        self.centipede.append(CentipedeHead(position))
+        for i in range(1,4):
+            self.centipede.append(CentipedeBody(Vector2(position.x, position.y+i*30)))
+        self.centipede.append(False)
+    
+    def levelBOSS2(self):
+        self.round=12
+        for _ in range(0,4):
+            while True:
+                position = get_random_position(self.screen)
+                if (
+                    position.distance_to(self.spaceship.position)
+                    > self.MIN_ASTEROID_DISTANCE
+                ):
+                    break
+            self.centipede.append(CentipedeHead(position))
+            for i in range(1,4):
+                self.centipede.append(CentipedeBody(Vector2(position.x, position.y+i*30)))
+            self.centipede.append(False)
     
     def _draw(self):
         self.screen.blit(self.background, (0, 0))
         
         for game_object in self._get_game_objects():
-            game_object.draw(self.screen)
+            if game_object:
+                game_object.draw(self.screen)
 
         if self.message:
             print_text(self.screen, self.message, self.font)
@@ -452,7 +552,7 @@ class SpaceRocks:
         self.clock.tick(60)
 
     def _get_game_objects(self):
-        game_objects = [*self.buffs, *self.iventory, *self.items, *self.enemys, *self.asteroids, *self.bullets, *self.enemyBullets, *self.bullet2, *self.missiles, *self.missilesInv, *self.explosion, *self.explosion]
+        game_objects = [*self.buffs, *self.iventory, *self.items, *self.enemys, *self.asteroids, *self.bullets, *self.enemyBullets, *self.bullet2, *self.missiles, *self.missilesInv, *self.explosion, *self.explosion, *self.centipede]
 
         if self.spaceship:
             game_objects.append(self.spaceship)
