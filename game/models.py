@@ -173,7 +173,7 @@ class EnemySpaceship(GameObject):
 
     def shoot(self):
         bullet_velocity = self.direction * self.BULLET_SPEED + self.velocity
-        bullet = Bullet(self.position, bullet_velocity)
+        bullet = BulletEnemy(self.position, bullet_velocity)
         self.create_bullet_callback(bullet)
         #self.laser_sound.play()
 
@@ -278,6 +278,14 @@ class Bullet(GameObject):
 
     def move(self, surface):
         self.position = self.position + self.velocity
+        
+class BulletEnemy(GameObject):
+    def __init__(self, position, velocity):
+        super().__init__(position, load_sprite("bulletEnemy.png"), velocity)
+
+    def move(self, surface):
+        self.position = self.position + self.velocity
+
 
 
 class Bullet2(GameObject):

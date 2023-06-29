@@ -267,7 +267,7 @@ class SpaceRocks:
                 self.enemyBullets.remove(bullet)                        
             
         print(self.centipede)
-        if not self.asteroids and not self.enemys and self.spaceship and len(self.centipede)<2:
+        if not self.asteroids and not self.enemys and self.spaceship:
             if self.round == 1:
                 self.level2()
             elif self.round == 2:
@@ -289,9 +289,19 @@ class SpaceRocks:
             elif self.round == 10:
                 self.levelBOSS1()
             elif self.round == 11:
-                self.levelBOSS2()
+                count = 0
+                for x in range(0, len(self.centipede)):
+                    if self.centipede[x]:
+                        count+=1
+                if count==0:
+                    self.levelBOSS2()
             elif self.round == 12:
-                self.message = 'YOU WIN!'
+                count = 0
+                for x in range(0, len(self.centipede)):
+                    if self.centipede[x]:
+                        count+=1
+                if count==0:
+                    self.message = 'YOU WIN!'
         self.timer += 1
         
     def level1(self):
@@ -505,6 +515,10 @@ class SpaceRocks:
         self.enemys.append(EnemySpaceship(position, self.enemyBullets.append)) 
     
     def levelBOSS1(self):
+        self.items = []
+        self.iventory = []
+        self.missilesInv = []
+        self.missiles = []
         self.round=11
         self.spaceship.LIFE = 100
         while True:
